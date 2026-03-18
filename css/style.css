@@ -1,179 +1,79 @@
+/* General body settings */
 body {
     margin: 0;
-    font-family: 'Arial', sans-serif;
-    background: #0f1923;
-    color: white;
-    overflow-x: hidden;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #0e141f;
+    color: #fff;
 }
 
-/* Main Container */
+/* Container */
 .container {
-    max-width: 1000px;
-    margin: 40px auto;
-    background: #1b2733;
-    border: 2px solid #ff4655;
-    box-shadow: 0 0 25px rgba(255,70,85,0.35);
-    position: relative;
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    border: 2px solid #ff1a3c;
+    border-radius: 10px;
 }
 
 /* Header */
 header {
     text-align: center;
-    padding: 50px 20px;
-    background: #111823;
-    border-bottom: 2px solid #ff4655;
-    position: relative;
-    overflow: hidden;
+    padding: 20px 0;
+    border-bottom: 2px solid #ff1a3c;
 }
 
-/* Animated Background Line */
-header::before {
-    content: "";
-    position: absolute;
-    width: 200%;
-    height: 200%;
-    top: -50%;
-    left: -50%;
-    background: linear-gradient(
-        45deg,
-        transparent,
-        rgba(255,70,85,0.08),
-        transparent
-    );
-    animation: movebg 6s linear infinite;
-}
-
-@keyframes movebg {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* CPT Logo Gaming Badge */
-header img {
-    width: 170px;
-    height: 170px;
-    object-fit: cover;
-    padding: 10px;
-    background: #0f1923;
-    border: 3px solid #ff4655;
-    box-shadow:
-        0 0 20px rgba(255,70,85,0.7),
-        0 0 40px rgba(255,70,85,0.35);
-    clip-path: polygon(
-        15% 0%, 85% 0%,
-        100% 15%, 100% 85%,
-        85% 100%, 15% 100%,
-        0% 85%, 0% 15%
-    );
-    transition: 0.4s ease;
-    position: relative;
-    z-index: 2;
-}
-
-header img:hover {
-    transform: scale(1.08);
-    box-shadow:
-        0 0 30px rgba(255,70,85,0.9),
-        0 0 60px rgba(255,70,85,0.5);
-}
-
-/* Title */
 header h1 {
-    margin: 20px 0 8px;
-    font-size: 2.5rem;
-    letter-spacing: 4px;
-    color: #ff4655;
-    text-transform: uppercase;
-    text-shadow: 0 0 12px rgba(255,70,85,0.6);
-    position: relative;
-    z-index: 2;
+    color: #ff1a3c;
+    margin: 10px 0;
+    text-shadow: 0 0 10px #ff1a3c;
 }
 
-/* Subtitle */
 header p {
-    color: #c7d5e0;
-    letter-spacing: 1px;
-    font-size: 1rem;
-    position: relative;
-    z-index: 2;
+    color: #ccc;
+}
+
+.profile-img {
+    width: 140px;
+    height: 140px;
+    border-radius: 10px;
+    border: 2px solid #ff1a3c;
 }
 
 /* Tabs */
 .tabs {
-    display: flex;
-    justify-content: center;
-    background: #16202b;
-    border-bottom: 2px solid #ff4655;
+    text-align: center;
+    margin: 20px 0;
 }
 
 .tabs button {
     background: none;
-    border: none;
-    color: white;
-    padding: 16px 28px;
+    border: 2px solid #fff;
+    color: #fff;
+    padding: 8px 16px;
+    margin: 0 5px;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 15px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: 0.3s;
-    position: relative;
+    transition: all 0.3s;
 }
 
 .tabs button:hover {
-    background: #ff4655;
-    color: white;
-}
-
-.tabs button::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 0%;
-    height: 2px;
-    background: white;
-    transition: 0.3s;
-}
-
-.tabs button:hover::after {
-    width: 100%;
-    left: 0;
+    background-color: #ff1a3c;
+    border-color: #ff1a3c;
+    color: #fff;
 }
 
 /* Sections */
 .section {
     display: none;
-    padding: 35px;
-    line-height: 1.8;
+    margin-top: 20px;
 }
 
 .section.active {
     display: block;
 }
 
-/* Headings */
-h2 {
-    color: #ff4655;
-    border-bottom: 2px solid #ff4655;
-    padding-bottom: 8px;
-    margin-bottom: 20px;
-}
-
-/* Lists */
-ul {
-    line-height: 2;
-}
-
-/* Cards */
-.card {
-    background: #16202b;
-    border-left: 4px solid #ff4655;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 0 12px rgba(255,70,85,0.15);
-}
-
-/* Buttons */
-button {
-    font-weight: bold;
+.section h2 {
+    color: #ff1a3c;
+    border-bottom: 1px solid #ff1a3c;
+    padding-bottom: 5px;
 }
