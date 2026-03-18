@@ -1,23 +1,45 @@
+/* Base Page */
 body {
     margin: 0;
-    background: #0f1923;
+    background: radial-gradient(circle at top, #1f2c3a, #0b1118);
     font-family: Arial, sans-serif;
+    color: white;
 }
 
-.container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0;
-    padding: 20px;
+/* Animated Background Glow */
+body::before {
+    content: "";
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255,70,85,0.05),
+        transparent
+    );
+    animation: bgmove 15s linear infinite;
+    z-index: -1;
+}
+
+@keyframes bgmove {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 /* Main Container */
 .container {
+    width: 100%;
     max-width: 1000px;
     margin: 40px auto;
+    padding: 20px;
     background: #1b2733;
     border: 2px solid #ff4655;
-    box-shadow: 0 0 25px rgba(255,70,85,0.35);
+    box-shadow:
+        0 0 25px rgba(255,70,85,0.35),
+        0 0 60px rgba(255,70,85,0.15);
     position: relative;
 }
 
@@ -31,7 +53,7 @@ header {
     overflow: hidden;
 }
 
-/* Animated Background Line */
+/* Animated Header Effect */
 header::before {
     content: "";
     position: absolute;
@@ -53,7 +75,7 @@ header::before {
     100% { transform: rotate(360deg); }
 }
 
-/* CPT Logo Gaming Badge */
+/* Profile Image */
 header img {
     width: 170px;
     height: 170px;
@@ -129,6 +151,7 @@ header p {
     color: white;
 }
 
+/* Tab underline animation */
 .tabs button::after {
     content: "";
     position: absolute;
@@ -176,6 +199,12 @@ ul {
     padding: 15px;
     margin-bottom: 15px;
     box-shadow: 0 0 12px rgba(255,70,85,0.15);
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 18px rgba(255,70,85,0.35);
 }
 
 /* Buttons */
