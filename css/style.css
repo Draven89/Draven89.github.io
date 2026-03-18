@@ -1,79 +1,57 @@
-/* General body settings */
+/* General styling */
 body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
     margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #0e141f;
-    color: #fff;
+    padding: 0;
 }
 
-/* Container */
 .container {
-    max-width: 800px;
-    margin: 50px auto;
+    max-width: 900px;
+    margin: 0 auto;
     padding: 20px;
-    border: 2px solid #ff1a3c;
-    border-radius: 10px;
 }
 
-/* Header */
+/* Header styling */
 header {
     text-align: center;
-    padding: 20px 0;
-    border-bottom: 2px solid #ff1a3c;
+    margin-bottom: 30px;
 }
 
-header h1 {
-    color: #ff1a3c;
-    margin: 10px 0;
-    text-shadow: 0 0 10px #ff1a3c;
+.profile-pic {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%; /* Makes it circular */
+    object-fit: cover;
+    border: 3px solid #333;
+    margin-bottom: 10px;
 }
 
-header p {
-    color: #ccc;
-}
-
-.profile-img {
-    width: 140px;
-    height: 140px;
-    border-radius: 10px;
-    border: 2px solid #ff1a3c;
-}
-
-/* Tabs */
+/* Tabs styling */
 .tabs {
     text-align: center;
-    margin: 20px 0;
+    margin-bottom: 20px;
 }
 
 .tabs button {
-    background: none;
-    border: 2px solid #fff;
-    color: #fff;
-    padding: 8px 16px;
+    padding: 10px 20px;
     margin: 0 5px;
-    border-radius: 5px;
+    border: none;
+    background-color: #333;
+    color: #fff;
     cursor: pointer;
-    transition: all 0.3s;
+    border-radius: 5px;
 }
 
 .tabs button:hover {
-    background-color: #ff1a3c;
-    border-color: #ff1a3c;
-    color: #fff;
+    background-color: #555;
 }
 
 /* Sections */
 .section {
     display: none;
-    margin-top: 20px;
 }
 
 .section.active {
     display: block;
-}
-
-.section h2 {
-    color: #ff1a3c;
-    border-bottom: 1px solid #ff1a3c;
-    padding-bottom: 5px;
 }
