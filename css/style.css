@@ -211,3 +211,23 @@ ul {
 button {
     font-weight: bold;
 }
+/* Portfolio Link Button */
+.portfolio-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: #ff4655;
+    color: white;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 2px;
+    border: 1px solid white;
+    transition: 0.3s;
+}
+
+.portfolio-btn:hover {
+    background: #0f1923;
+    color: #ff4655;
+    box-shadow: 0 0 15px rgba(255,70,85,0.8);
+}
