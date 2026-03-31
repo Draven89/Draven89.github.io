@@ -43,13 +43,12 @@ header {
 }
 
 .imgframe {
-    max-width: 100%;
-    height: auto;
-    border-radius: 10px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-    transition: transform 0.3s ease;
+    width: 100%;      
+    max-width: 400px;  
+    height: auto;     
+    display: block;
+    margin: 0 auto;
 }
-
 .imgframe:hover {
     transform: scale(1.05); /* Added a nice zoom effect on hover */
 }
