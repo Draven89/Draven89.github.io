@@ -66,7 +66,6 @@
             grid.innerHTML = "<p class='status-msg'>Accessing Global Database...</p>";
 
             try {
-                // Construct URL with query and optional type filter
                 let url = `${API_BASE}?q=${encodeURIComponent(query)}&sfw`;
                 if (filterType) url += `&type=${filterType}`;
 
@@ -125,7 +124,6 @@
     const grid = document.getElementById('results-grid');
     const TOP_API = "https://api.jikan.moe/v4/top/anime";
     
-    // Clear current search input to avoid confusion
     document.getElementById('userInput').value = "";
     
     grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Archives...</p>";
@@ -134,7 +132,6 @@
         const res = await fetch(TOP_API);
         const json = await res.json();
         
-        // Jikan's top anime endpoint also returns data in a .data array
         renderGrid(json.data || []);
     } catch (err) {
         grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson)">Database Error: Could not retrieve rankings.</p>`;
