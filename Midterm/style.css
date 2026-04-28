@@ -1,0 +1,234 @@
+/* Core Theme Colors */
+:root {
+    --bg-black: #0a0a0a;
+    --card-gray: #161616;
+    --border-dim: #2a2a2a;
+    --text-white: #e0e0e0;
+    --accent-star: #fbbf24;
+    --quincy-blue: #00aaff;
+    --hollow-crimson: #ff0040;
+    --nav-height: 70px;
+}
+
+body {
+    background-color: var(--bg-black);
+    color: var(--text-white);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+/* Header & Navigation */
+.top-nav {
+    height: var(--nav-height);
+    background: rgba(0, 0, 0, 0.9);
+    border-bottom: 1px solid var(--border-dim);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5%;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.brand-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.nav-logo {
+    height: 40px;
+    margin-right: 15px;
+    filter: brightness(0) invert(1); /* Makes the Bleach logo white */
+}
+
+.home-btn {
+    font-weight: bold;
+    letter-spacing: 2px;
+    font-size: 1.2rem;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.search-group {
+    display: flex;
+    background: #222;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.search-group input {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    outline: none;
+}
+
+.search-group button {
+    background: var(--quincy-blue);
+    border: none;
+    color: black;
+    padding: 5px 15px;
+    border-radius: 3px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Layout Wrapper */
+.wrapper {
+    padding: 40px 5%;
+}
+
+.clan-nav {
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.clan-label {
+    font-size: 0.8rem;
+    color: #666;
+    letter-spacing: 1px;
+}
+
+select {
+    background: #111;
+    color: white;
+    border: 1px solid var(--border-dim);
+    padding: 5px 10px;
+}
+
+/* Results Grid */
+#results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 25px;
+}
+
+.placeholder-text, .status-msg {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #555;
+    margin-top: 50px;
+}
+
+/* Card Styling */
+.card {
+    background: var(--card-gray);
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    cursor: pointer;
+    height: 100%;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-color: var(--quincy-blue);
+    background: #1e1e1e;
+}
+
+.card img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-bottom: 1px solid var(--border-dim);
+}
+
+.card-info {
+    padding: 15px;
+}
+
+.card-race {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--quincy-blue);
+    margin-bottom: 5px;
+}
+
+.card-name {
+    font-weight: bold;
+    font-size: 1rem;
+    color: var(--text-white);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2; /* Add this line to satisfy the standard */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Profile Modal (Side Drawer Style) */
+#profile-box {
+    position: fixed;
+    top: 0;
+    right: -100%; /* Hidden by default */
+    width: 400px;
+    height: 100%;
+    background: #0f0f0f;
+    border-left: 2px solid var(--quincy-blue);
+    z-index: 2000;
+    transition: 0.4s ease-in-out;
+    padding: 40px 20px;
+    overflow-y: auto;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+}
+
+#profile-box.active {
+    right: 0;
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #666;
+}
+
+.close-btn:hover { color: white; }
+
+.profile-img {
+    width: 100%;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.profile-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.profile-kanji {
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #222;
+}
+
+.stat-label {
+    color: #888;
+    font-weight: bold;
+}
+
+.profile-desc {
+    margin-top: 20px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #bbb;
+}

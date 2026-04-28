@@ -1,1 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Archive | Powered by Jikan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <header class="top-nav">
+        <div class="brand-container" onclick="location.reload()">
+            <div class="home-btn">ANIME ARCHIVE</div>
+        </div>
+
+        <div class="nav-right">
+            <div class="search-group">
+                <input type="text" id="userInput" placeholder="Search Anime (e.g. Bleach)...">
+                <button onclick="fetchAnimeData()">Search</button>
+            </div>
+            <div class="nav-link" onclick="fetchTopAnime()" style="cursor: pointer">Top Anime</div>
+            <div class="nav-link">Season</div>
+        </div>
+    </header>
+
+    <div id="profile-box">
+        <div class="close-btn" onclick="closeProfile()">×</div>
+        <div id="profile-content"></div>
+    </div>
+
+    <main class="wrapper">
+        <div class="content-box">
+            <div class="clan-nav">
+                <span class="clan-label">FILTER TYPE</span>
+                <select id="typeFilter" onchange="fetchAnimeData(this.value)">
+                    <option value="">All Types</option>
+                    <option value="tv">TV Series</option>
+                    <option value="movie">Movie</option>
+                    <option value="ova">OVA</option>
+                    <option value="special">Special</option>
+                </select>
+            </div>
+
+            <div id="results-grid">
+                <div class="placeholder-text">Search for an anime to begin data extraction.</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+
+    <script>
+    
+        const API_BASE = "https://api.jikan.moe/v4/anime";
+
+        async function fetchAnimeData(typeValue = null) {
+            const query = document.getElementById('userInput').value.trim();
+            const filterType = typeValue || document.getElementById('typeFilter').value;
+            const grid = document.getElementById('results-grid');
+
+            if (!query && !typeValue) return;
+
+            grid.innerHTML = "<p class='status-msg'>Accessing Global Database...</p>";
+
+            try {
+                // Construct URL with query and optional type filter
+                let url = `${API_BASE}?q=${encodeURIComponent(query)}&sfw`;
+                if (filterType) url += `&type=${filterType}`;
+
+                const res = await fetch(url);
+                const json = await res.json();
+                
+                renderGrid(json.data || []);
+            } catch (err) {
+                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson)">Database Error: Connection Interrupted.</p>`;
+            }
+        }
+
+        function renderGrid(animeList) {
+            const grid = document.getElementById('results-grid');
+            grid.innerHTML = animeList.length ? "" : "<p class='status-msg'>No matches found in this sector.</p>";
+
+            animeList.forEach(anime => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => openProfile(anime);
+
+                card.innerHTML = `
+                    <img src="${anime.images.jpg.image_url}" alt="${anime.title}">
+                    <div class="card-info">
+                        <div class="card-race">${anime.type} • ${anime.score || 'N/A'} ★</div>
+                        <div class="card-name">${anime.title}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openProfile(anime) {
+            const box = document.getElementById('profile-box');
+            const content = document.getElementById('profile-content');
+
+            content.innerHTML = `
+                <img src="${anime.images.jpg.large_image_url}" class="profile-img">
+                <div class="profile-title">${anime.title}</div>
+                <div class="profile-kanji">${anime.title_japanese || ''}</div>
+                <div class="stat-row"><span class="stat-label">Episodes</span><span>${anime.episodes || '??'}</span></div>
+                <div class="stat-row"><span class="stat-label">Status</span><span>${anime.status}</span></div>
+                <div class="stat-row"><span class="stat-label">Rating</span><span>${anime.rating || 'Unrated'}</span></div>
+                <p class="profile-desc">${anime.synopsis || 'No synopsis available.'}</p>
+                <div style="margin-top: 20px;">
+                    <a href="${anime.url}" target="_blank" style="color: var(--quincy-blue); text-decoration: none; font-weight: bold;">View on MyAnimeList →</a>
+                </div>
+            `;
+            box.classList.add('active');
+        }
+
+        function closeProfile() {
+            document.getElementById('profile-box').classList.remove('active');
+        }
+        async function fetchTopAnime() {
+    const grid = document.getElementById('results-grid');
+    const TOP_API = "https://api.jikan.moe/v4/top/anime";
+    
+    // Clear current search input to avoid confusion
+    document.getElementById('userInput').value = "";
+    
+    grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Archives...</p>";
+
+    try {
+        const res = await fetch(TOP_API);
+        const json = await res.json();
+        
+        // Jikan's top anime endpoint also returns data in a .data array
+        renderGrid(json.data || []);
+    } catch (err) {
+        grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson)">Database Error: Could not retrieve rankings.</p>`;
+    }
+}
+    </script>
+</body>
+</html>
