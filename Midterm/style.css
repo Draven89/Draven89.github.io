@@ -1,4 +1,4 @@
-/* Core Theme Colors */
+
 :root {
     --bg-black: #0a0a0a;
     --card-gray: #161616;
@@ -18,7 +18,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Header & Navigation */
 .top-nav {
     height: var(--nav-height);
     background: rgba(0, 0, 0, 0.9);
