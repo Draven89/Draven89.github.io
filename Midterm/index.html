@@ -66,7 +66,7 @@
             grid.innerHTML = "<p class='status-msg'>Accessing Global Database...</p>";
 
             try {
-                let url = `${API_BASE}?q=${encodeURIComponent(query)}&sfw=true`;
+                let url = `${API_BASE}?q=${encodeURIComponent(query)}&sfw=&genres_exclude=9, 49`;
                 if (filterType) url += `&type=${filterType}`;
 
                 const res = await fetch(url);
