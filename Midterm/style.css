@@ -5,9 +5,8 @@
     --border-dim: #2a2a2a;
     --text-white: #e0e0e0;
     --accent-star: #fbbf24;
-    --quincy-blue: #00aaff;
-    --hollow-crimson: #ff0040;
-    --nav-height: 70px;
+    --primary-accent: #00aaff; 
+    --error-red: #ff0040; 
 }
 
 body {
@@ -56,24 +55,22 @@ body {
 }
 
 .search-group {
-    display: flex;
-    background: #222;
+    border: 1px solid #333;
     border-radius: 4px;
-    padding: 5px;
+    background: #111;
 }
 
 .search-group input {
     background: transparent;
     border: none;
+    padding: 8px;
     color: white;
-    padding: 5px 10px;
-    outline: none;
 }
 
 .search-group button {
     background: var(--quincy-blue);
     border: none;
-    color: black;
+    color: rgb(240, 239, 239);
     padding: 5px 15px;
     border-radius: 3px;
     font-weight: bold;
