@@ -51,21 +51,26 @@
     </main>
 
     <script>
-
         const API_BASE = "https://api.jikan.moe/v4/anime";
+        const EXCLUDE_GENRES = "12,49";
+
+        function isAdultContent(anime) {
+            const rating = anime.rating ? anime.rating.toLowerCase() : "";
+            const hasAdultGenre = anime.genres ? anime.genres.some(g => g.mal_id === 12 || g.mal_id === 49) : false;
+            return rating.includes('rx') || rating.includes('hentai') || hasAdultGenre;
+        }
 
         async function fetchAnimeData(typeValue = null) {
             const query = document.getElementById('userInput').value.trim();
             const filterType = typeValue || document.getElementById('typeFilter').value;
             const grid = document.getElementById('results-grid');
-            const EXCLUDE_GENRES = "9,12,49";
 
             if (!query && !typeValue) return;
 
             grid.innerHTML = "<p class='status-msg'>Accessing Global Database...</p>";
 
             try {
-                let url = `${API_BASE}?q=${encodeURIComponent(query)}&sfw=&genres_exclude=9, 49`;
+                let url = `${API_BASE}?q=${encodeURIComponent(query)}&sfw=true&genres_exclude=${EXCLUDE_GENRES}`;
                 if (filterType) url += `&type=${filterType}`;
 
                 const res = await fetch(url);
@@ -79,7 +84,117 @@
 
         function renderGrid(animeList) {
             const grid = document.getElementById('results-grid');
-            grid.innerHTML = animeList.length ? "" : "<p class='status-msg'>No matches found in this sector.</p>";
+            grid.innerHTML = "";
+
+            const safeList = animeList.filter(anime => !isAdultContent(anime));
+
+            if (safeList.length === 0) {
+                grid.innerHTML = "<p class='status-msg'>No safe matches found in this sector.</p>";
+                return;
+            }
+
+            safeList.forEach(anime => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => openProfile(anime);
+
+                card.innerHTML = `
+                    <img src="${anime.images.jpg.image_url}" alt="${anime.title}">
+                    <div class="card-info">
+                        <div class="card-race">${anime.type} • ${anime.score || 'N/A'} ★</div>
+                        <div class="card-name">${anime.title}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        async function fetchTopSeries() {
+            const grid = document.getElementById('results-grid');
+            // Added sfw=true
+            const TOP_SERIES_API = "https://api.jikan.moe/v4/top/anime?type=tv&sfw=true";
+
+            document.getElementById('userInput').value = "";
+            grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Series...</p>";
+
+            try {
+                const res = await fetch(TOP_SERIES_API);
+                const json = await res.json();
+                renderGrid(json.data || []);
+            } catch (err) {
+                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson)">Error: Could not retrieve series rankings.</p>`;
+            }
+        }
+
+        async function fetchTopMovies() {
+            const grid = document.getElementById('results-grid');
+            // Added sfw=true
+            const TOP_MOVIES_API = "https://api.jikan.moe/v4/top/anime?type=movie&sfw=true";
+
+            document.getElementById('userInput').value = "";
+            grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Movies...</p>";
+
+            try {
+                const res = await fetch(TOP_MOVIES_API);
+                const json = await res.json();
+                renderGrid(json.data || []);
+            } catch (err) {
+                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson)">Error: Could not retrieve movie rankings.</p>`;
+            }
+        }
+
+        async function fetchRandomAnime() {
+            const grid = document.getElementById('results-grid');
+            const RANDOM_API = "https://api.jikan.moe/v4/random/anime";
+
+            document.getElementById('userInput').value = "";
+            grid.innerHTML = "";
+
+            const totalToLoad = 55;
+            const batchSize = 5;
+            let currentCount = 0;
+
+            try {
+                while (currentCount < totalToLoad) {
+                    let batch = [];
+
+                    for (let i = 0; i < batchSize; i++) {
+                        const res = await fetch(RANDOM_API);
+
+                        if (res.status === 429) {
+                            await new Promise(r => setTimeout(r, 1500));
+                            i--;
+                            continue;
+                        }
+
+                        const json = await res.json();
+                        const anime = json.data;
+
+                        // Check if anime exists AND is safe
+                        if (anime && !isAdultContent(anime)) {
+                            batch.push(anime);
+                            currentCount++;
+                        } else {
+                            // If it's null or adult content, skip and retry this slot
+                            i--;
+                        }
+
+                        await new Promise(r => setTimeout(r, 400));
+                    }
+
+                    appendToGrid(batch);
+
+                    if (currentCount < totalToLoad) {
+                        await new Promise(r => setTimeout(r, 800));
+                    }
+                }
+            } catch (err) {
+                console.error("Batch load failed:", err);
+            }
+        }
+
+        function appendToGrid(animeList) {
+            const grid = document.getElementById('results-grid');
 
             animeList.forEach(anime => {
                 const card = document.createElement('div');
@@ -110,7 +225,7 @@
                 <div class="stat-row"><span class="stat-label">Rating</span><span>${anime.rating || 'Unrated'}</span></div>
                 <p class="profile-desc">${anime.synopsis || 'No synopsis available.'}</p>
                 <div style="margin-top: 20px;">
-                    <a href="${anime.url}" target="_blank" style="color: var(--quincy-blue); text-decoration: none; font-weight: bold;">View on MyAnimeList →</a>
+                    <a href="${anime.url}" target="_blank" style="color: #4a90e2; text-decoration: none; font-weight: bold;">View on MyAnimeList →</a>
                 </div>
             `;
             box.classList.add('active');
@@ -118,101 +233,6 @@
 
         function closeProfile() {
             document.getElementById('profile-box').classList.remove('active');
-        }
-        async function fetchTopSeries() {
-            const grid = document.getElementById('results-grid');
-            const TOP_SERIES_API = "https://api.jikan.moe/v4/top/anime?type=tv";
-
-            document.getElementById('userInput').value = "";
-            grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Series...</p>";
-
-            try {
-                const res = await fetch(TOP_SERIES_API);
-                const json = await res.json();
-                renderGrid(json.data || []);
-            } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson)">Error: Could not retrieve series rankings.</p>`;
-            }
-        }
-
-        async function fetchTopMovies() {
-            const grid = document.getElementById('results-grid');
-            const TOP_MOVIES_API = "https://api.jikan.moe/v4/top/anime?type=movie";
-
-            document.getElementById('userInput').value = "";
-            grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Movies...</p>";
-
-            try {
-                const res = await fetch(TOP_MOVIES_API);
-                const json = await res.json();
-                renderGrid(json.data || []);
-            } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson)">Error: Could not retrieve movie rankings.</p>`;
-            }
-        }
-        async function fetchRandomAnime() {
-            const grid = document.getElementById('results-grid');
-            const RANDOM_API = "https://api.jikan.moe/v4/random/anime";
-
-            document.getElementById('userInput').value = "";
-            grid.innerHTML = "";
-
-            const totalToLoad = 55;
-            const batchSize = 5;
-            let currentCount = 0;
-
-            try {
-                while (currentCount < totalToLoad) {
-                    let batch = [];
-
-                    for (let i = 0; i < batchSize; i++) {
-                        const res = await fetch(RANDOM_API);
-
-                        if (res.status === 429) {
-                            await new Promise(r => setTimeout(r, 1500));
-                            i--;
-                            continue;
-                        }
-
-                        const json = await res.json();
-                        if (json.data) {
-                            batch.push(json.data);
-                            currentCount++;
-                        }
-
-
-                        await new Promise(r => setTimeout(r, 400));
-                    }
-
-                    appendToGrid(batch);
-
-
-                    if (currentCount < totalToLoad) {
-                        await new Promise(r => setTimeout(r, 800));
-                    }
-                }
-            } catch (err) {
-                console.error("Batch load failed:", err);
-            }
-        }
-
-        function appendToGrid(animeList) {
-            const grid = document.getElementById('results-grid');
-
-            animeList.forEach(anime => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.onclick = () => openProfile(anime);
-
-                card.innerHTML = `
-            <img src="${anime.images.jpg.image_url}" alt="${anime.title}">
-            <div class="card-info">
-                <div class="card-race">${anime.type} • ${anime.score || 'N/A'} ★</div>
-                <div class="card-name">${anime.title}</div>
-            </div>
-        `;
-                grid.appendChild(card);
-            });
         }
 
         window.onload = fetchRandomAnime;
