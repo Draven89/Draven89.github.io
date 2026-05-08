@@ -58,7 +58,7 @@
             const query = document.getElementById('userInput').value.trim();
             const filterType = typeValue || document.getElementById('typeFilter').value;
             const grid = document.getElementById('results-grid');
-            const EXCLUDE_GENRES = "12,49";
+            const EXCLUDE_GENRES = "9,12,49";
 
             if (!query && !typeValue) return;
 
@@ -119,7 +119,6 @@
         function closeProfile() {
             document.getElementById('profile-box').classList.remove('active');
         }
-        // Function for Top Anime Series (TV)
         async function fetchTopSeries() {
             const grid = document.getElementById('results-grid');
             const TOP_SERIES_API = "https://api.jikan.moe/v4/top/anime?type=tv";
@@ -158,8 +157,8 @@
             document.getElementById('userInput').value = "";
             grid.innerHTML = "";
 
-            const totalToLoad = 54;
-            const batchSize = 3;
+            const totalToLoad = 55;
+            const batchSize = 5;
             let currentCount = 0;
 
             try {
