@@ -54,11 +54,26 @@
         const API_BASE = "https://api.jikan.moe/v4/anime";
         const EXCLUDE_GENRES = "12,49";
 
-        function isAdultContent(anime) {
-            const rating = anime.rating ? anime.rating.toLowerCase() : "";
-            const hasAdultGenre = anime.genres ? anime.genres.some(g => g.mal_id === 12 || g.mal_id === 49) : false;
-            return rating.includes('rx') || rating.includes('hentai') || hasAdultGenre;
-        }
+      function isAdultContent(anime) {
+    if (!anime) return true;
+
+
+    const rating = anime.rating ? anime.rating.toLowerCase() : "";
+    if (rating.includes('rx') || rating.includes('hentai') || rating.includes('x-rated')) return true;
+
+
+    const adultGenreIds = [12, 49]; 
+    const hasAdultGenre = anime.genres && anime.genres.some(g => adultGenreIds.includes(g.mal_id));
+    if (hasAdultGenre) return true;
+
+    const adultKeywords = ['hentai', 'uncensored', 'erotica', 'sex', 'porn'];
+    const title = anime.title ? anime.title.toLowerCase() : "";
+    const synopsis = anime.synopsis ? anime.synopsis.toLowerCase() : "";
+    
+    if (adultKeywords.some(word => title.includes(word) || synopsis.includes(word))) return true;
+
+    return false;
+}
 
         async function fetchAnimeData(typeValue = null) {
             const query = document.getElementById('userInput').value.trim();
@@ -111,7 +126,6 @@
 
         async function fetchTopSeries() {
             const grid = document.getElementById('results-grid');
-            // Added sfw=true
             const TOP_SERIES_API = "https://api.jikan.moe/v4/top/anime?type=tv&sfw=true";
 
             document.getElementById('userInput').value = "";
@@ -128,7 +142,6 @@
 
         async function fetchTopMovies() {
             const grid = document.getElementById('results-grid');
-            // Added sfw=true
             const TOP_MOVIES_API = "https://api.jikan.moe/v4/top/anime?type=movie&sfw=true";
 
             document.getElementById('userInput').value = "";
@@ -170,12 +183,10 @@
                         const json = await res.json();
                         const anime = json.data;
 
-                        // Check if anime exists AND is safe
                         if (anime && !isAdultContent(anime)) {
                             batch.push(anime);
                             currentCount++;
                         } else {
-                            // If it's null or adult content, skip and retry this slot
                             i--;
                         }
 
