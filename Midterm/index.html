@@ -11,7 +11,7 @@
 
 <body>
 
-    <header class="top-nav">
+    <header class="top-nav p-2">
         <div class="brand-container" onclick="fetchRandomAnime()">
             <div class="home-btn">ANIME ARCHIVE</div>
         </div>
@@ -19,10 +19,13 @@
         <div class="nav-right">
             <div class="search-group">
                 <input type="text" id="userInput" placeholder="Search Anime (e.g. Bleach)...">
-                <button onclick="fetchAnimeData()">Search</button>
+                <button onclick="fetchAnimeData">Search</button>
             </div>
-            <div class="nav-link" onclick="fetchTopSeries()" style="cursor: pointer">Top Anime Series</div>
-            <div class="nav-link" onclick="fetchTopMovies()" style="cursor: pointer">Top Anime Movies</div>
+            <div class="nav-link" onclick="fetchTopSeries()" style="cursor: pointer">Top Series</div>
+            <div class="nav-link" onclick="fetchTopMovies()" style="cursor: pointer">Top Movies</div>
+            <button class="btn btn-dark" onclick="switchTheme()" style="cursor: pointer">
+                <span id="modeBtn">Light Mode</span>
+            </button>
         </div>
     </header>
 
@@ -34,7 +37,7 @@
     <main class="wrapper">
         <div class="content-box">
             <div class="clan-nav">
-                <span class="clan-label">FILTER TYPE</span>
+                <span class="clan-label" :>FILTER TYPE</span>
                 <select id="typeFilter" onchange="fetchAnimeData(this.value)">
                     <option value="">All Types</option>
                     <option value="tv">TV Series</option>
@@ -51,29 +54,42 @@
     </main>
 
     <script>
+        var modeBtn = document.getElementById("modeBtn");
+        var body = document.body;
+        let mode = "dark";
+        function switchTheme() {
+            if (mode === "light") {
+                mode = "dark";
+                modeBtn.innerHTML = "Light Mode";
+            } else {
+                mode = "light";
+                modeBtn.innerHTML = "Dark Mode";
+            }
+            body.setAttribute("data-bs-theme", mode);
+        }
         const API_BASE = "https://api.jikan.moe/v4/anime";
         const EXCLUDE_GENRES = "12,49";
 
-      function isAdultContent(anime) {
-    if (!anime) return true;
+        function isAdultContent(anime) {
+            if (!anime) return true;
 
 
-    const rating = anime.rating ? anime.rating.toLowerCase() : "";
-    if (rating.includes('rx') || rating.includes('hentai') || rating.includes('x-rated')) return true;
+            const rating = anime.rating ? anime.rating.toLowerCase() : "";
+            if (rating.includes('rx') || rating.includes('hentai') || rating.includes('x-rated')) return true;
 
 
-    const adultGenreIds = [12, 49]; 
-    const hasAdultGenre = anime.genres && anime.genres.some(g => adultGenreIds.includes(g.mal_id));
-    if (hasAdultGenre) return true;
+            const adultGenreIds = [12, 49];
+            const hasAdultGenre = anime.genres && anime.genres.some(g => adultGenreIds.includes(g.mal_id));
+            if (hasAdultGenre) return true;
 
-    const adultKeywords = ['hentai', 'uncensored', 'erotica', 'sex', 'porn'];
-    const title = anime.title ? anime.title.toLowerCase() : "";
-    const synopsis = anime.synopsis ? anime.synopsis.toLowerCase() : "";
-    
-    if (adultKeywords.some(word => title.includes(word) || synopsis.includes(word))) return true;
+            const adultKeywords = ['hentai', 'uncensored', 'erotica', 'sex', 'porn'];
+            const title = anime.title ? anime.title.toLowerCase() : "";
+            const synopsis = anime.synopsis ? anime.synopsis.toLowerCase() : "";
 
-    return false;
-}
+            if (adultKeywords.some(word => title.includes(word) || synopsis.includes(word))) return true;
+
+            return false;
+        }
 
         async function fetchAnimeData(typeValue = null) {
             const query = document.getElementById('userInput').value.trim();

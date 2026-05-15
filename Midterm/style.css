@@ -227,3 +227,9 @@ select {
     line-height: 1.6;
     color: #bbb;
 }
+[data-bs-theme="light"] {
+    background-color: #b2adad;
+}
+[data-bs-theme="dark"] {
+    background-color: #121010;
+}
