@@ -1,13 +1,20 @@
-/* Base Page */
+/* Base Page & Moving Valorant Theme Background */
 body {
     margin: 0;
-    background: radial-gradient(circle at top, #1f2c3a, #0b1118);
-    font-family: Arial, sans-serif;
-    color: white;
+    background: radial-gradient(circle at top, #1f2c3a, #0b1118); 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #cbd5e1;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    box-sizing: border-box;
+    position: relative;
 }
 
-/* Animated Background Glow */
-body::before {
+/* Animated Background Glow Layer */
+.bg-animation {
     content: "";
     position: fixed;
     top: -50%;
@@ -17,11 +24,12 @@ body::before {
     background: linear-gradient(
         45deg,
         transparent,
-        rgba(255,70,85,0.05),
+        rgba(255, 70, 85, 0.05),
         transparent
     );
     animation: bgmove 15s linear infinite;
     z-index: -1;
+    pointer-events: none;
 }
 
 @keyframes bgmove {
@@ -29,205 +37,253 @@ body::before {
     100% { transform: rotate(360deg); }
 }
 
-/* Main Container */
+/* Flexbox Two-Column Page Frame */
 .container {
     width: 100%;
-    max-width: 1000px;
-    margin: 40px auto;
-    padding: 20px;
-    background: #1b2733;
-    border: 2px solid #ff4655;
-    box-shadow:
-        0 0 25px rgba(255,70,85,0.35),
-        0 0 60px rgba(255,70,85,0.15);
-    position: relative;
-}
-
-/* Header */
-header {
-    text-align: center;
-    padding: 50px 20px;
-    background: #111823;
-    border-bottom: 2px solid #ff4655;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Animated Header Effect */
-header::before {
-    content: "";
-    position: absolute;
-    width: 200%;
-    height: 200%;
-    top: -50%;
-    left: -50%;
-    background: linear-gradient(
-        45deg,
-        transparent,
-        rgba(255,70,85,0.08),
-        transparent
-    );
-    animation: movebg 6s linear infinite;
-}
-
-@keyframes movebg {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Profile Image */
-header img {
-    width: 170px;
-    height: 170px;
-    object-fit: cover;
-    padding: 10px;
-    background: #0f1923;
-    border: 3px solid #ff4655;
-    box-shadow:
-        0 0 20px rgba(255,70,85,0.7),
-        0 0 40px rgba(255,70,85,0.35);
-    clip-path: polygon(
-        15% 0%, 85% 0%,
-        100% 15%, 100% 85%,
-        85% 100%, 15% 100%,
-        0% 85%, 0% 15%
-    );
-    transition: 0.4s ease;
-    position: relative;
-    z-index: 2;
-}
-
-header img:hover {
-    transform: scale(1.08);
-    box-shadow:
-        0 0 30px rgba(255,70,85,0.9),
-        0 0 60px rgba(255,70,85,0.5);
-}
-
-/* Title */
-header h1 {
-    margin: 20px 0 8px;
-    font-size: 2.5rem;
-    letter-spacing: 4px;
-    color: #ff4655;
-    text-transform: uppercase;
-    text-shadow: 0 0 12px rgba(255,70,85,0.6);
-    position: relative;
-    z-index: 2;
-}
-
-/* Subtitle */
-header p {
-    color: #c7d5e0;
-    letter-spacing: 1px;
-    font-size: 1rem;
-    position: relative;
-    z-index: 2;
-}
-
-/* Tabs */
-.tabs {
+    max-width: 1200px;
+    margin: 0 auto;
     display: flex;
-    justify-content: center;
-    background: #16202b;
-    border-bottom: 2px solid #ff4655;
+    flex-direction: row;
+    gap: 30px;
+    box-sizing: border-box;
+    align-items: flex-start;
+    z-index: 1;
 }
 
-.tabs button {
-    background: none;
-    border: none;
+/* --- OPTION 1 DEFAULT DESIGN --- */
+
+/* Left Sidebar Box */
+header {
+    flex: 0 0 290px;
+    background-color: #111823;
     color: white;
-    padding: 16px 28px;
-    cursor: pointer;
-    font-size: 15px;
+    padding: 30px 24px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 70, 85, 0.2);
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
+    box-sizing: border-box;
+    transition: all 0.4s ease;
+}
+
+.profile-header-inline {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+header .profile-pic {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ff4655;
+    background-color: #1e293b;
+}
+
+.profile-title-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+header h1 {
+    font-size: 1.2rem;
+    margin: 0 0 6px 0;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+.badge {
+    background-color: #ff4655;
+    color: white;
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: 0.3s;
-    position: relative;
+    letter-spacing: 0.5px;
 }
 
-.tabs button:hover {
-    background: #ff4655;
-    color: white;
-}
-
-/* Tab underline animation */
-.tabs button::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 0%;
-    height: 2px;
-    background: white;
-    transition: 0.3s;
-}
-
-.tabs button:hover::after {
-    width: 100%;
-    left: 0;
-}
-
-/* Sections */
-.section {
-    display: none;
-    padding: 35px;
-    line-height: 1.8;
-}
-
-.section.active {
-    display: block;
-}
-
-/* Headings */
-h2 {
-    color: #ff4655;
-    border-bottom: 2px solid #ff4655;
-    padding-bottom: 8px;
+.contact-info {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 20px;
     margin-bottom: 20px;
 }
 
-/* Lists */
-ul {
-    line-height: 2;
+.contact-info p {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    margin: 0 0 16px 0;
+    color: #94a3b8;
 }
 
-/* Cards */
-.card {
-    background: #16202b;
-    border-left: 4px solid #ff4655;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 0 12px rgba(255,70,85,0.15);
-    transition: 0.3s;
+.contact-info strong {
+    color: #ffffff;
+    font-size: 0.85rem;
 }
 
-.card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0 18px rgba(255,70,85,0.35);
-}
-
-/* Buttons */
-button {
-    font-weight: bold;
-}
-/* Portfolio Link Button */
-.portfolio-btn {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 12px 24px;
-    background: #ff4655;
-    color: white;
+.contact-info a {
+    color: #94a3b8;
     text-decoration: none;
-    text-transform: uppercase;
-    font-weight: bold;
-    letter-spacing: 2px;
-    border: 1px solid white;
-    transition: 0.3s;
 }
 
-.portfolio-btn:hover {
-    background: #0f1923;
+.contact-info a:hover {
     color: #ff4655;
-    box-shadow: 0 0 15px rgba(255,70,85,0.8);
+}
+
+/* Theme Switch Utility Button */
+.theme-toggle-btn {
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    border: 1px solid #ff4655;
+    color: #ff4655;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+    background: #ff4655;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(255, 70, 85, 0.4);
+}
+
+/* Right Content Structure */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.content-card {
+    background-color: rgba(22, 32, 43, 0.9);
+    padding: 35px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: all 0.4s ease;
+}
+
+.content-card h2 {
+    color: #ff4655;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-top: 0;
+    margin-bottom: 18px;
+}
+
+.content-card p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #cbd5e1;
+    margin: 0;
+}
+
+.skills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.skill-tag {
+    background-color: #111823;
+    color: #94a3b8;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.82rem;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* This forces the two cards to sit side-by-side cleanly */
+.portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 15px;
+    width: 100%;
+}
+
+/* New Card Layout Structure */
+.project-card-v2 {
+    background-color: #111823; /* Dark background to match your sidebar */
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Image Wrapper */
+.project-preview-wrap {
+    width: 100%;
+    height: 150px;
+    overflow: hidden;
+}
+
+.project-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Details and Spacing */
+.project-details-v2 {
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.project-details-v2 h3 {
+    font-size: 1.5rem;
+    color: #ffffff;
+    margin: 0 0 10px 0;
+}
+
+.project-details-v2 p {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+    flex-grow: 1;
+}
+
+
+.project-actions-v2 {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+
+.action-btn-v2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #ffffff;
+    border: 1px solid #334155;
+    padding: 8px 14px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.action-btn-v2:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: #ff4655; /* Highlights red on hover */
 }
