@@ -12,14 +12,14 @@
 <body>
 
     <header class="top-nav p-2">
-        <div class="brand-container" onclick="fetchRandomAnime()">
-            <div class="home-btn">ANIME ARCHIVE</div>
+        <div class="brand-container" onclick="fetchInitialAnime()">
+            <div class="home-btn" style="cursor: pointer;">ANIME ARCHIVE</div>
         </div>
 
         <div class="nav-right">
             <div class="search-group">
-                <input type="text" id="userInput" placeholder="Search Anime (e.g. Bleach)...">
-                <button onclick="fetchAnimeData">Search</button>
+                <input type="text" id="userInput" placeholder="Search Anime (e.g. Bleach)..." onkeyup="handleKeyPress(event)">
+                <button onclick="fetchAnimeData()">Search</button>
             </div>
             <div class="nav-link" onclick="fetchTopSeries()" style="cursor: pointer">Top Series</div>
             <div class="nav-link" onclick="fetchTopMovies()" style="cursor: pointer">Top Movies</div>
@@ -37,7 +37,7 @@
     <main class="wrapper">
         <div class="content-box">
             <div class="clan-nav">
-                <span class="clan-label" :>FILTER TYPE</span>
+                <span class="clan-label">FILTER TYPE</span>
                 <select id="typeFilter" onchange="fetchAnimeData(this.value)">
                     <option value="">All Types</option>
                     <option value="tv">TV Series</option>
@@ -57,6 +57,7 @@
         var modeBtn = document.getElementById("modeBtn");
         var body = document.body;
         let mode = "dark";
+        
         function switchTheme() {
             if (mode === "light") {
                 mode = "dark";
@@ -67,16 +68,15 @@
             }
             body.setAttribute("data-bs-theme", mode);
         }
+
         const API_BASE = "https://api.jikan.moe/v4/anime";
         const EXCLUDE_GENRES = "12,49";
 
         function isAdultContent(anime) {
             if (!anime) return true;
 
-
             const rating = anime.rating ? anime.rating.toLowerCase() : "";
             if (rating.includes('rx') || rating.includes('hentai') || rating.includes('x-rated')) return true;
-
 
             const adultGenreIds = [12, 49];
             const hasAdultGenre = anime.genres && anime.genres.some(g => adultGenreIds.includes(g.mal_id));
@@ -91,12 +91,21 @@
             return false;
         }
 
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                fetchAnimeData();
+            }
+        }
+
         async function fetchAnimeData(typeValue = null) {
             const query = document.getElementById('userInput').value.trim();
             const filterType = typeValue || document.getElementById('typeFilter').value;
             const grid = document.getElementById('results-grid');
 
-            if (!query && !typeValue) return;
+            if (!query && !typeValue) {
+                fetchInitialAnime();
+                return;
+            }
 
             grid.innerHTML = "<p class='status-msg'>Accessing Global Database...</p>";
 
@@ -109,7 +118,7 @@
 
                 renderGrid(json.data || []);
             } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson)">Database Error: Connection Interrupted.</p>`;
+                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson, #ff4655)">Database Error: Connection Interrupted.</p>`;
             }
         }
 
@@ -132,7 +141,7 @@
                 card.innerHTML = `
                     <img src="${anime.images.jpg.image_url}" alt="${anime.title}">
                     <div class="card-info">
-                        <div class="card-race">${anime.type} • ${anime.score || 'N/A'} ★</div>
+                        <div class="card-race">${anime.type || 'N/A'} • ${anime.score || 'N/A'} ★</div>
                         <div class="card-name">${anime.title}</div>
                     </div>
                 `;
@@ -152,7 +161,7 @@
                 const json = await res.json();
                 renderGrid(json.data || []);
             } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson)">Error: Could not retrieve series rankings.</p>`;
+                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson, #ff4655)">Error: Could not retrieve series rankings.</p>`;
             }
         }
 
@@ -168,75 +177,22 @@
                 const json = await res.json();
                 renderGrid(json.data || []);
             } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson)">Error: Could not retrieve movie rankings.</p>`;
+                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson, #ff4655)">Error: Could not retrieve movie rankings.</p>`;
             }
         }
 
-        async function fetchRandomAnime() {
+        // Optimized initial load to prevent HTTP 429 rate limiting
+        async function fetchInitialAnime() {
             const grid = document.getElementById('results-grid');
-            const RANDOM_API = "https://api.jikan.moe/v4/random/anime";
-
-            document.getElementById('userInput').value = "";
-            grid.innerHTML = "";
-
-            const totalToLoad = 55;
-            const batchSize = 5;
-            let currentCount = 0;
+            grid.innerHTML = "<p class='status-msg'>Loading Trending Anime Archive...</p>";
 
             try {
-                while (currentCount < totalToLoad) {
-                    let batch = [];
-
-                    for (let i = 0; i < batchSize; i++) {
-                        const res = await fetch(RANDOM_API);
-
-                        if (res.status === 429) {
-                            await new Promise(r => setTimeout(r, 1500));
-                            i--;
-                            continue;
-                        }
-
-                        const json = await res.json();
-                        const anime = json.data;
-
-                        if (anime && !isAdultContent(anime)) {
-                            batch.push(anime);
-                            currentCount++;
-                        } else {
-                            i--;
-                        }
-
-                        await new Promise(r => setTimeout(r, 400));
-                    }
-
-                    appendToGrid(batch);
-
-                    if (currentCount < totalToLoad) {
-                        await new Promise(r => setTimeout(r, 800));
-                    }
-                }
+                const res = await fetch("https://api.jikan.moe/v4/top/anime?sfw=true&limit=24");
+                const json = await res.json();
+                renderGrid(json.data || []);
             } catch (err) {
-                console.error("Batch load failed:", err);
+                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson, #ff4655)">Error: Unable to load archive database.</p>`;
             }
-        }
-
-        function appendToGrid(animeList) {
-            const grid = document.getElementById('results-grid');
-
-            animeList.forEach(anime => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.onclick = () => openProfile(anime);
-
-                card.innerHTML = `
-                    <img src="${anime.images.jpg.image_url}" alt="${anime.title}">
-                    <div class="card-info">
-                        <div class="card-race">${anime.type} • ${anime.score || 'N/A'} ★</div>
-                        <div class="card-name">${anime.title}</div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
         }
 
         function openProfile(anime) {
@@ -248,7 +204,7 @@
                 <div class="profile-title">${anime.title}</div>
                 <div class="profile-kanji">${anime.title_japanese || ''}</div>
                 <div class="stat-row"><span class="stat-label">Episodes</span><span>${anime.episodes || '??'}</span></div>
-                <div class="stat-row"><span class="stat-label">Status</span><span>${anime.status}</span></div>
+                <div class="stat-row"><span class="stat-label">Status</span><span>${anime.status || 'N/A'}</span></div>
                 <div class="stat-row"><span class="stat-label">Rating</span><span>${anime.rating || 'Unrated'}</span></div>
                 <p class="profile-desc">${anime.synopsis || 'No synopsis available.'}</p>
                 <div style="margin-top: 20px;">
@@ -262,9 +218,9 @@
             document.getElementById('profile-box').classList.remove('active');
         }
 
-        window.onload = fetchRandomAnime;
+        window.onload = fetchInitialAnime;
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
