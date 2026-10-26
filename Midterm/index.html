@@ -1,4 +1,59 @@
-<script>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Archive</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <header class="top-nav p-2">
+        <div class="brand-container" onclick="fetchInitialAnime()">
+            <div class="home-btn" style="cursor: pointer;">ANIME ARCHIVE</div>
+        </div>
+
+        <div class="nav-right">
+            <div class="search-group">
+                <input type="text" id="userInput" placeholder="Search Anime (e.g. Bleach)..." onkeyup="handleKeyPress(event)">
+                <button onclick="fetchAnimeData()">Search</button>
+            </div>
+            <div class="nav-link" onclick="fetchTopSeries()" style="cursor: pointer">Top Series</div>
+            <div class="nav-link" onclick="fetchTopMovies()" style="cursor: pointer">Top Movies</div>
+            <button class="btn btn-dark" onclick="switchTheme()" style="cursor: pointer">
+                <span id="modeBtn">Light Mode</span>
+            </button>
+        </div>
+    </header>
+
+    <div id="profile-box">
+        <div class="close-btn" onclick="closeProfile()">×</div>
+        <div id="profile-content"></div>
+    </div>
+
+    <main class="wrapper">
+        <div class="content-box">
+            <div class="clan-nav">
+                <span class="clan-label">FILTER TYPE</span>
+                <select id="typeFilter" onchange="fetchAnimeData(this.value)">
+                    <option value="">All Types</option>
+                    <option value="TV">TV Series</option>
+                    <option value="MOVIE">Movie</option>
+                    <option value="OVA">OVA</option>
+                    <option value="SPECIAL">Special</option>
+                </select>
+            </div>
+
+            <div id="results-grid">
+                <div class="placeholder-text">Search for an anime to begin data extraction.</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
         var modeBtn = document.getElementById("modeBtn");
         var body = document.body;
         let mode = "dark";
@@ -72,7 +127,7 @@
         }
 
         async function fetchAnimeData(typeValue = null) {
-            clearTracker();
+            clearTimer();
             const query = document.getElementById('userInput').value.trim();
             const filterType = typeValue || document.getElementById('typeFilter').value;
             const grid = document.getElementById('results-grid');
@@ -96,10 +151,6 @@
             }
         }
 
-        function clearTracker() {
-            clearTimer();
-        }
-
         // Staggered renderer: 3 items every 3 seconds, strictly skipping missing/placeholder images
         function staggerRenderGrid(animeList) {
             clearTimer();
@@ -109,7 +160,6 @@
             const safeList = animeList.filter(anime => {
                 if (!anime || !anime.coverImage) return false;
                 const imgUrl = anime.coverImage.large || anime.coverImage.extraLarge;
-                // Exclude empty, null, or known placeholder text image URLs
                 if (!imgUrl || imgUrl.includes("default") || imgUrl.includes("placeholder")) return false;
                 return true;
             });
@@ -239,3 +289,7 @@
 
         window.onload = () => fetchInitialAnime();
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
