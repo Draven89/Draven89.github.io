@@ -114,6 +114,10 @@
                 if (filterType) url += `&type=${filterType}`;
 
                 const res = await fetch(url);
+                if (res.status === 429) {
+                    grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson, #ff4655)">Rate limit reached. Please wait a moment and search again.</p>`;
+                    return;
+                }
                 const json = await res.json();
 
                 renderGrid(json.data || []);
@@ -181,18 +185,28 @@
             }
         }
 
-        // Optimized initial load to prevent HTTP 429 rate limiting
-        async function fetchInitialAnime() {
+        // Safe initial load with built-in retry mechanism to bypass rate limits (429)
+        async function fetchInitialAnime(retries = 3) {
             const grid = document.getElementById('results-grid');
-            grid.innerHTML = "<p class='status-msg'>Loading Trending Anime Archive...</p>";
+            grid.innerHTML = "<p class='status-msg'>Loading Anime Archive...</p>";
 
-            try {
-                const res = await fetch("https://api.jikan.moe/v4/top/anime?sfw=true&limit=24");
-                const json = await res.json();
-                renderGrid(json.data || []);
-            } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson, #ff4655)">Error: Unable to load archive database.</p>`;
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const res = await fetch("https://api.jikan.moe/v4/top/anime?sfw=true&limit=16");
+                    if (res.status === 429) {
+                        await new Promise(r => setTimeout(r, 1200)); // wait before retrying
+                        continue;
+                    }
+                    const json = await res.json();
+                    if (json.data && json.data.length > 0) {
+                        renderGrid(json.data);
+                        return;
+                    }
+                } catch (err) {
+                    // try next iteration
+                }
             }
+            grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson, #ff4655)">API rate limit hit. Please click 'ANIME ARCHIVE' or search to retry.</p>`;
         }
 
         function openProfile(anime) {
@@ -218,7 +232,7 @@
             document.getElementById('profile-box').classList.remove('active');
         }
 
-        window.onload = fetchInitialAnime;
+        window.onload = () => fetchInitialAnime();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
