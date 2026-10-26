@@ -72,7 +72,6 @@
 
         const API_BASE = "https://kitsu.io/api/edge/anime";
 
-        // Multi-layer filter for adult/NSFW content using Kitsu's rating and keywords
         function isAdultContent(anime) {
             if (!anime || !anime.attributes) return true;
             const attr = anime.attributes;
@@ -116,7 +115,7 @@
             grid.innerHTML = "<p class='status-msg'>Accessing Global Database...</p>";
 
             try {
-                let url = `${API_BASE}?filter[text]=${encodeURIComponent(query)}&page[limit]=20`;
+                let url = `${API_BASE}?filter[text]=${encodeURIComponent(query)}&page[limit]=24`;
                 if (filterType) {
                     url += `&filter[subtype]=${filterType}`;
                 }
@@ -130,7 +129,7 @@
             }
         }
 
-        // Staggered renderer: renders 3 items per second (~333ms interval)
+        // Staggered renderer: renders 3 items every 6 seconds (6000ms)
         function staggerRenderGrid(animeList) {
             clearTimer();
             const grid = document.getElementById('results-grid');
@@ -144,10 +143,12 @@
             }
 
             let currentIndex = 0;
+            const batchSize = 3;
 
-            function renderNextItem() {
-                if (currentIndex < safeList.length) {
-                    const anime = safeList[currentIndex];
+            function renderNextBatch() {
+                const chunk = safeList.slice(currentIndex, currentIndex + batchSize);
+                
+                chunk.forEach(anime => {
                     const attr = anime.attributes;
                     const card = document.createElement('div');
                     card.className = 'card';
@@ -166,19 +167,22 @@
                         </div>
                     `;
                     grid.appendChild(card);
-                    currentIndex++;
-                }
+                });
 
+                currentIndex += batchSize;
                 if (currentIndex >= safeList.length) {
                     clearTimer();
                 }
             }
 
-            renderNextItem();
+            // Render first 3 items immediately
+            renderNextBatch();
+
+            // Schedule subsequent batches of 3 every 6 seconds (6000 ms)
             if (currentIndex < safeList.length) {
                 loadIntervalId = setInterval(() => {
-                    renderNextItem();
-                }, 333);
+                    renderNextBatch();
+                }, 6000);
             }
         }
 
@@ -189,7 +193,7 @@
             grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Series...</p>";
 
             try {
-                const res = await fetch(`${API_BASE}?filter[subtype]=TV&sort=-userCount&page[limit]=20`);
+                const res = await fetch(`${API_BASE}?filter[subtype]=TV&sort=-userCount&page[limit]=24`);
                 const json = await res.json();
                 staggerRenderGrid(json.data || []);
             } catch (err) {
@@ -204,7 +208,7 @@
             grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Movies...</p>";
 
             try {
-                const res = await fetch(`${API_BASE}?filter[subtype]=movie&sort=-userCount&page[limit]=20`);
+                const res = await fetch(`${API_BASE}?filter[subtype]=movie&sort=-userCount&page[limit]=24`);
                 const json = await res.json();
                 staggerRenderGrid(json.data || []);
             } catch (err) {
@@ -218,14 +222,14 @@
             grid.innerHTML = "<p class='status-msg'>Loading Anime Archive...</p>";
 
             try {
-                const res = await fetch(`${API_BASE}?sort=-popularityRank&page[limit]=20`);
+                const res = await fetch(`${API_BASE}?sort=-popularityRank&page[limit]=24`);
                 const json = await res.json();
                 if (json.data && json.data.length > 0) {
                     staggerRenderGrid(json.data);
                     return;
                 }
             } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:#ff4655">Connection error. Use the search bar above.</p>`;
+                grid.innerHTML = `<p class='status-msg' style="color:#ff4655">API rate limit hit. Please click 'ANIME ARCHIVE' or search to retry.</p>`;
             }
         }
 
