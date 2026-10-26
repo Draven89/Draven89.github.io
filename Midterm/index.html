@@ -41,9 +41,9 @@
                 <select id="typeFilter" onchange="fetchAnimeData(this.value)">
                     <option value="">All Types</option>
                     <option value="TV">TV Series</option>
-                    <option value="movie">Movie</option>
+                    <option value="MOVIE">Movie</option>
                     <option value="OVA">OVA</option>
-                    <option value="special">Special</option>
+                    <option value="SPECIAL">Special</option>
                 </select>
             </div>
 
@@ -70,299 +70,34 @@
             body.setAttribute("data-bs-theme", mode);
         }
 
-        const API_BASE = "https://kitsu.io/api/edge/anime";
+        const ANILIST_URL = "https://graphql.anilist.co";
 
-        function isAdultContent(anime) {
-            if (!anime || !anime.attributes) return true;
-            const attr = anime.attributes;
-            
-            const ageRating = attr.ageRating ? attr.ageRating.toLowerCase() : "";
-            if (ageRating === 'r18' || ageRating.includes('rx')) return true;
-
-            const adultKeywords = ['hentai', 'uncensored', 'erotica', 'sex', 'porn'];
-            const title = attr.canonicalTitle ? attr.canonicalTitle.toLowerCase() : "";
-            const synopsis = attr.synopsis ? attr.synopsis.toLowerCase() : "";
-
-            if (adultKeywords.some(word => title.includes(word) || synopsis.includes(word))) return true;
-
-            return false;
-        }
-
-        function handleKeyPress(e) {
-            if (e.key === 'Enter') {
-                fetchAnimeData();
-            }
-        }
-
-        function clearTimer() {
-            if (loadIntervalId) {
-                clearInterval(loadIntervalId);
-                loadIntervalId = null;
-            }
-        }
-
-        async function fetchAnimeData(typeValue = null) {
-            clearTimer();
-            const query = document.getElementById('userInput').value.trim();
-            const filterType = typeValue || document.getElementById('typeFilter').value;
-            const grid = document.getElementById('results-grid');
-
-            if (!query && !typeValue) {
-                fetchInitialAnime();
-                return;
-            }
-
-            grid.innerHTML = "<p class='status-msg'>Accessing Global Database...</p>";
-
-            try {
-                let url = `${API_BASE}?filter[text]=${encodeURIComponent(query)}&page[limit]=20`;
-                if (filterType) {
-                    url += `&filter[subtype]=${filterType}`;
-                }
-
-                const res = await fetch(url);
-                const json = await res.json();
-
-                staggerRenderGrid(json.data || []);
-            } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:#ff4655">Database Error: Connection Interrupted.</p>`;
-            }
-        }
-
-        // Optimized renderer: renders first 6 items instantly, then streams subsequent batches of 3 every 3 seconds
-        function staggerRenderGrid(animeList) {
-            clearTimer();
-            const grid = document.getElementById('results-grid');
-            grid.innerHTML = "";
-
-            const safeList = animeList.filter(anime => {
-                if (isAdultContent(anime)) return false;
-                const attr = anime.attributes;
-                if (!attr.posterImage || !attr.posterImage.small) return false;
-                return true;
-            });
-
-            if (safeList.length === 0) {
-                grid.innerHTML = "<p class='status-msg'>No safe matches found in this sector.</p>";
-                return;
-            }
-
-            let currentIndex = 0;
-
-            function appendBatch(size) {
-                const chunk = safeList.slice(currentIndex, currentIndex + size);
-                chunk.forEach(anime => {
-                    const attr = anime.attributes;
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.onclick = () => openProfile(anime);
-
-                    const posterImg = attr.posterImage.small;
-                    const title = attr.canonicalTitle || attr.titles.en || 'Unknown Title';
-                    const type = attr.subtype || 'N/A';
-                    const score = attr.averageRating ? (parseFloat(attr.averageRating) / 10).toFixed(1) : 'N/A';
-
-                    card.innerHTML = `
-                        <img src="${posterImg}" alt="${title}">
-                        <div class="card-info">
-                            <div class="card-race">${type} • ${score} ★</div>
-                            <div class="card-name">${title}</div>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                });
-                currentIndex += size;
-            }
-
-            // Render first 6 items immediately so the page is responsive instantly
-            appendBatch(6);
-
-            // Stream remaining items in batches of 3 every 3 seconds
-            if (currentIndex < safeList.length) {
-                loadIntervalId = setInterval(() => {
-                    if (currentIndex < safeList.length) {
-                        appendBatch(3);
-                    } else {
-                        clearTimer();
+        // GraphQL Query for AniList API
+        const ANIME_QUERY = `
+            query ($search: String, $format: MediaFormat, $sort: [MediaSort]) {
+                Page(perPage: 30) {
+                    media(search: $search, format: $format, sort: $sort, type: ANIME, isAdult: false) {
+                        id
+                        title {
+                            romaji
+                            english
+                            native
+                        }
+                        coverImage {
+                            large
+                            extraLarge
+                        }
+                        format
+                        averageScore
+                        episodes
+                        status
+                        description
+                        siteUrl
+                        genres
                     }
-                }, 3000);
-            }
-        }
-
-        async function fetchTopSeries() {
-            clearTimer();
-            const grid = document.getElementById('results-grid');
-            document.getElementById('userInput').value = "";
-            grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Series...</p>";
-
-            try {
-                const res = await fetch(`${API_BASE}?filter[subtype]=TV&sort=-userCount&page[limit]=20`);
-                const json = await res.json();
-                staggerRenderGrid(json.data || []);
-            } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:#ff4655">Error: Could not retrieve series rankings.</p>`;
-            }
-        }
-
-        async function fetchTopMovies() {
-            clearTimer();
-            const grid = document.getElementById('results-grid');
-            document.getElementById('userInput').value = "";
-            grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Movies...</p>";
-
-            try {
-                const res = await fetch(`${API_BASE}?filter[subtype]=movie&sort=-userCount&page[limit]=20`);
-                const json = await res.json();
-                staggerRenderGrid(json.data || []);
-            } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:#ff4655">Error: Could not retrieve movie rankings.</p>`;
-            }
-        }
-
-        async function fetchInitialAnime() {
-            clearTimer();
-            const grid = document.getElementById('results-grid');
-            grid.innerHTML = "<p class='status-msg'>Loading Anime Archive...</p>";
-
-            try {
-                const res = await fetch(`${API_BASE}?sort=-popularityRank&page[limit]=20`);
-                const json = await res.json();
-                if (json.data && json.data.length > 0) {
-                    staggerRenderGrid(json.data);
-                    return;
                 }
-            } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:#ff4655">API rate limit hit. Please click 'ANIME ARCHIVE' or search to retry.</p>`;
             }
-        }
-
-        function openProfile(anime) {
-            const attr = anime.attributes;
-            const box = document.getElementById('profile-box');
-            const content = document.getElementById('profile-content');
-
-            const largeImg = attr.posterImage ? attr.posterImage.large || attr.posterImage.original : '';
-            const title = attr.canonicalTitle || 'Unknown Title';
-            const kanji = attr.titles.ja_jp || '';
-            const episodes = attr.episodeCount || '??';
-            const status = attr.status || 'N/A';
-            const rating = attr.ageRating || 'Unrated';
-            const synopsis = attr.synopsis || 'No synopsis available.';
-            const kitsuLink = `https://kitsu.io/anime/${attr.slug}`;
-
-            content.innerHTML = `
-                <img src="${largeImg}" class="profile-img">
-                <div class="profile-title">${title}</div>
-                <div class="profile-kanji">${kanji}</div>
-                <div class="stat-row"><span class="stat-label">Episodes</span><span>${episodes}</span></div>
-                <div class="stat-row"><span class="stat-label">Status</span><span>${status}</span></div>
-                <div class="stat-row"><span class="stat-label">Rating</span><span>${rating}</span></div>
-                <p class="profile-desc">${synopsis}</p>
-                <div style="margin-top: 20px;">
-                    <a href="${kitsuLink}" target="_blank" style="color: #4a90e2; text-decoration: none; font-weight: bold;">View on Kitsu →</a>
-                </div>
-            `;
-            box.classList.add('active');
-        }
-
-        function closeProfile() {
-            document.getElementById('profile-box').classList.remove('active');
-        }
-
-        window.onload = () => fetchInitialAnime();
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
-</body>
-
-</html><!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime Archive</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="style.css" rel="stylesheet">
-</head>
-
-<body>
-
-    <header class="top-nav p-2">
-        <div class="brand-container" onclick="fetchInitialAnime()">
-            <div class="home-btn" style="cursor: pointer;">ANIME ARCHIVE</div>
-        </div>
-
-        <div class="nav-right">
-            <div class="search-group">
-                <input type="text" id="userInput" placeholder="Search Anime (e.g. Bleach)..." onkeyup="handleKeyPress(event)">
-                <button onclick="fetchAnimeData()">Search</button>
-            </div>
-            <div class="nav-link" onclick="fetchTopSeries()" style="cursor: pointer">Top Series</div>
-            <div class="nav-link" onclick="fetchTopMovies()" style="cursor: pointer">Top Movies</div>
-            <button class="btn btn-dark" onclick="switchTheme()" style="cursor: pointer">
-                <span id="modeBtn">Light Mode</span>
-            </button>
-        </div>
-    </header>
-
-    <div id="profile-box">
-        <div class="close-btn" onclick="closeProfile()">×</div>
-        <div id="profile-content"></div>
-    </div>
-
-    <main class="wrapper">
-        <div class="content-box">
-            <div class="clan-nav">
-                <span class="clan-label">FILTER TYPE</span>
-                <select id="typeFilter" onchange="fetchAnimeData(this.value)">
-                    <option value="">All Types</option>
-                    <option value="TV">TV Series</option>
-                    <option value="movie">Movie</option>
-                    <option value="OVA">OVA</option>
-                    <option value="special">Special</option>
-                </select>
-            </div>
-
-            <div id="results-grid">
-                <div class="placeholder-text">Search for an anime to begin data extraction.</div>
-            </div>
-        </div>
-    </main>
-
-    <script>
-        var modeBtn = document.getElementById("modeBtn");
-        var body = document.body;
-        let mode = "dark";
-        let loadIntervalId = null;
-        
-        function switchTheme() {
-            if (mode === "light") {
-                mode = "dark";
-                modeBtn.innerHTML = "Light Mode";
-            } else {
-                mode = "light";
-                modeBtn.innerHTML = "Dark Mode";
-            }
-            body.setAttribute("data-bs-theme", mode);
-        }
-
-        const API_BASE = "https://kitsu.io/api/edge/anime";
-
-        function isAdultContent(anime) {
-            if (!anime || !anime.attributes) return true;
-            const attr = anime.attributes;
-            
-            const ageRating = attr.ageRating ? attr.ageRating.toLowerCase() : "";
-            if (ageRating === 'r18' || ageRating.includes('rx')) return true;
-
-            const adultKeywords = ['hentai', 'uncensored', 'erotica', 'sex', 'porn'];
-            const title = attr.canonicalTitle ? attr.canonicalTitle.toLowerCase() : "";
-            const synopsis = attr.synopsis ? attr.synopsis.toLowerCase() : "";
-
-            if (adultKeywords.some(word => title.includes(word) || synopsis.includes(word))) return true;
-
-            return false;
-        }
+        `;
 
         function handleKeyPress(e) {
             if (e.key === 'Enter') {
@@ -375,6 +110,22 @@
                 clearInterval(loadIntervalId);
                 loadIntervalId = null;
             }
+        }
+
+        async function queryAniList(variables) {
+            const response = await fetch(ANILIST_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: ANIME_QUERY,
+                    variables: variables
+                })
+            });
+            const json = await response.json();
+            return json.data?.Page?.media || [];
         }
 
         async function fetchAnimeData(typeValue = null) {
@@ -391,33 +142,25 @@
             grid.innerHTML = "<p class='status-msg'>Accessing Global Database...</p>";
 
             try {
-                let url = `${API_BASE}?filter[text]=${encodeURIComponent(query)}&page[limit]=30`;
-                if (filterType) {
-                    url += `&filter[subtype]=${filterType}`;
-                }
+                const variables = {};
+                if (query) variables.search = query;
+                if (filterType) variables.format = filterType;
 
-                const res = await fetch(url);
-                const json = await res.json();
-
-                staggerRenderGrid(json.data || []);
+                const animeList = await queryAniList(variables);
+                staggerRenderGrid(animeList);
             } catch (err) {
                 grid.innerHTML = `<p class='status-msg' style="color:#ff4655">Database Error: Connection Interrupted.</p>`;
             }
         }
 
-        // Staggered renderer with image validation (renders 3 items every 6s)
+        // Staggered renderer: loads 3 items every 3 seconds (3000ms)
         function staggerRenderGrid(animeList) {
             clearTimer();
             const grid = document.getElementById('results-grid');
             grid.innerHTML = "";
 
-            // Filter out adult content AND entries missing valid poster images
-            const safeList = animeList.filter(anime => {
-                if (isAdultContent(anime)) return false;
-                const attr = anime.attributes;
-                if (!attr.posterImage || !attr.posterImage.small) return false;
-                return true;
-            });
+            // Filter out any anime missing cover images
+            const safeList = animeList.filter(anime => anime && anime.coverImage && anime.coverImage.large);
 
             if (safeList.length === 0) {
                 grid.innerHTML = "<p class='status-msg'>No safe matches found in this sector.</p>";
@@ -431,15 +174,14 @@
                 const chunk = safeList.slice(currentIndex, currentIndex + batchSize);
                 
                 chunk.forEach(anime => {
-                    const attr = anime.attributes;
                     const card = document.createElement('div');
                     card.className = 'card';
                     card.onclick = () => openProfile(anime);
 
-                    const posterImg = attr.posterImage.small;
-                    const title = attr.canonicalTitle || attr.titles.en || 'Unknown Title';
-                    const type = attr.subtype || 'N/A';
-                    const score = attr.averageRating ? (parseFloat(attr.averageRating) / 10).toFixed(1) : 'N/A';
+                    const posterImg = anime.coverImage.large;
+                    const title = anime.title.english || anime.title.romaji || 'Unknown Title';
+                    const type = anime.format || 'N/A';
+                    const score = anime.averageScore ? (anime.averageScore / 10).toFixed(1) : 'N/A';
 
                     card.innerHTML = `
                         <img src="${posterImg}" alt="${title}">
@@ -460,11 +202,11 @@
             // Render first 3 items immediately
             renderNextBatch();
 
-            // Schedule subsequent batches of 3 every 6 seconds (6000 ms)
+            // Schedule subsequent batches of 3 every 3 seconds (3000 ms)
             if (currentIndex < safeList.length) {
                 loadIntervalId = setInterval(() => {
                     renderNextBatch();
-                }, 6000);
+                }, 3000);
             }
         }
 
@@ -475,9 +217,8 @@
             grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Series...</p>";
 
             try {
-                const res = await fetch(`${API_BASE}?filter[subtype]=TV&sort=-userCount&page[limit]=30`);
-                const json = await res.json();
-                staggerRenderGrid(json.data || []);
+                const animeList = await queryAniList({ format: "TV", sort: ["SCORE_DESC"] });
+                staggerRenderGrid(animeList);
             } catch (err) {
                 grid.innerHTML = `<p class='status-msg' style="color:#ff4655">Error: Could not retrieve series rankings.</p>`;
             }
@@ -490,9 +231,8 @@
             grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Movies...</p>";
 
             try {
-                const res = await fetch(`${API_BASE}?filter[subtype]=movie&sort=-userCount&page[limit]=30`);
-                const json = await res.json();
-                staggerRenderGrid(json.data || []);
+                const animeList = await queryAniList({ format: "MOVIE", sort: ["SCORE_DESC"] });
+                staggerRenderGrid(animeList);
             } catch (err) {
                 grid.innerHTML = `<p class='status-msg' style="color:#ff4655">Error: Could not retrieve movie rankings.</p>`;
             }
@@ -501,33 +241,31 @@
         async function fetchInitialAnime() {
             clearTimer();
             const grid = document.getElementById('results-grid');
+            document.getElementById('userInput').value = "";
             grid.innerHTML = "<p class='status-msg'>Loading Anime Archive...</p>";
 
             try {
-                const res = await fetch(`${API_BASE}?sort=-popularityRank&page[limit]=30`);
-                const json = await res.json();
-                if (json.data && json.data.length > 0) {
-                    staggerRenderGrid(json.data);
+                const animeList = await queryAniList({ sort: ["POPULARITY_DESC"] });
+                if (animeList.length > 0) {
+                    staggerRenderGrid(animeList);
                     return;
                 }
             } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:#ff4655">API rate limit hit. Please click 'ANIME ARCHIVE' or search to retry.</p>`;
+                grid.innerHTML = `<p class='status-msg' style="color:#ff4655">Connection error. Use the search bar above.</p>`;
             }
         }
 
         function openProfile(anime) {
-            const attr = anime.attributes;
             const box = document.getElementById('profile-box');
             const content = document.getElementById('profile-content');
 
-            const largeImg = attr.posterImage ? attr.posterImage.large || attr.posterImage.original : '';
-            const title = attr.canonicalTitle || 'Unknown Title';
-            const kanji = attr.titles.ja_jp || '';
-            const episodes = attr.episodeCount || '??';
-            const status = attr.status || 'N/A';
-            const rating = attr.ageRating || 'Unrated';
-            const synopsis = attr.synopsis || 'No synopsis available.';
-            const kitsuLink = `https://kitsu.io/anime/${attr.slug}`;
+            const largeImg = anime.coverImage.extraLarge || anime.coverImage.large;
+            const title = anime.title.english || anime.title.romaji || 'Unknown Title';
+            const kanji = anime.title.native || '';
+            const episodes = anime.episodes || '??';
+            const status = anime.status || 'N/A';
+            const synopsis = anime.description ? anime.description.replace(/<[^>]*>?/gm, '') : 'No synopsis available.';
+            const aniListUrl = anime.siteUrl;
 
             content.innerHTML = `
                 <img src="${largeImg}" class="profile-img">
@@ -535,10 +273,9 @@
                 <div class="profile-kanji">${kanji}</div>
                 <div class="stat-row"><span class="stat-label">Episodes</span><span>${episodes}</span></div>
                 <div class="stat-row"><span class="stat-label">Status</span><span>${status}</span></div>
-                <div class="stat-row"><span class="stat-label">Rating</span><span>${rating}</span></div>
                 <p class="profile-desc">${synopsis}</p>
                 <div style="margin-top: 20px;">
-                    <a href="${kitsuLink}" target="_blank" style="color: #4a90e2; text-decoration: none; font-weight: bold;">View on Kitsu →</a>
+                    <a href="${aniListUrl}" target="_blank" style="color: #4a90e2; text-decoration: none; font-weight: bold;">View on AniList →</a>
                 </div>
             `;
             box.classList.add('active');
@@ -550,7 +287,7 @@
 
         window.onload = () => fetchInitialAnime();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
