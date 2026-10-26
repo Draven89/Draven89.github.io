@@ -115,7 +115,7 @@
             grid.innerHTML = "<p class='status-msg'>Accessing Global Database...</p>";
 
             try {
-                let url = `${API_BASE}?filter[text]=${encodeURIComponent(query)}&page[limit]=24`;
+                let url = `${API_BASE}?filter[text]=${encodeURIComponent(query)}&page[limit]=30`;
                 if (filterType) {
                     url += `&filter[subtype]=${filterType}`;
                 }
@@ -129,13 +129,19 @@
             }
         }
 
-        // Staggered renderer: renders 3 items every 6 seconds (6000ms)
+        // Staggered renderer with image validation (renders 3 items every 6s)
         function staggerRenderGrid(animeList) {
             clearTimer();
             const grid = document.getElementById('results-grid');
             grid.innerHTML = "";
 
-            const safeList = animeList.filter(anime => !isAdultContent(anime));
+            // Filter out adult content AND entries missing valid poster images
+            const safeList = animeList.filter(anime => {
+                if (isAdultContent(anime)) return false;
+                const attr = anime.attributes;
+                if (!attr.posterImage || !attr.posterImage.small) return false;
+                return true;
+            });
 
             if (safeList.length === 0) {
                 grid.innerHTML = "<p class='status-msg'>No safe matches found in this sector.</p>";
@@ -154,7 +160,7 @@
                     card.className = 'card';
                     card.onclick = () => openProfile(anime);
 
-                    const posterImg = attr.posterImage ? attr.posterImage.small : '';
+                    const posterImg = attr.posterImage.small;
                     const title = attr.canonicalTitle || attr.titles.en || 'Unknown Title';
                     const type = attr.subtype || 'N/A';
                     const score = attr.averageRating ? (parseFloat(attr.averageRating) / 10).toFixed(1) : 'N/A';
@@ -193,7 +199,7 @@
             grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Series...</p>";
 
             try {
-                const res = await fetch(`${API_BASE}?filter[subtype]=TV&sort=-userCount&page[limit]=24`);
+                const res = await fetch(`${API_BASE}?filter[subtype]=TV&sort=-userCount&page[limit]=30`);
                 const json = await res.json();
                 staggerRenderGrid(json.data || []);
             } catch (err) {
@@ -208,7 +214,7 @@
             grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Movies...</p>";
 
             try {
-                const res = await fetch(`${API_BASE}?filter[subtype]=movie&sort=-userCount&page[limit]=24`);
+                const res = await fetch(`${API_BASE}?filter[subtype]=movie&sort=-userCount&page[limit]=30`);
                 const json = await res.json();
                 staggerRenderGrid(json.data || []);
             } catch (err) {
@@ -222,7 +228,7 @@
             grid.innerHTML = "<p class='status-msg'>Loading Anime Archive...</p>";
 
             try {
-                const res = await fetch(`${API_BASE}?sort=-popularityRank&page[limit]=24`);
+                const res = await fetch(`${API_BASE}?sort=-popularityRank&page[limit]=30`);
                 const json = await res.json();
                 if (json.data && json.data.length > 0) {
                     staggerRenderGrid(json.data);
@@ -268,7 +274,7 @@
 
         window.onload = () => fetchInitialAnime();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
 </body>
 
 </html>
