@@ -7,6 +7,158 @@
     <title>Anime Archive</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #1e1e1e;
+            border-bottom: 1px solid #333;
+        }
+        .home-btn {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+        .nav-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .search-group {
+            display: flex;
+            gap: 5px;
+        }
+        .search-group input {
+            padding: 5px 10px;
+            background: #2b2b2b;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 4px;
+        }
+        .search-group button {
+            background: #0d6efd;
+            color: #fff;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .nav-link {
+            color: #ccc;
+            cursor: pointer;
+        }
+        .wrapper {
+            padding: 20px;
+        }
+        .clan-nav {
+            margin-bottom: 20px;
+        }
+        .clan-nav select {
+            background: #2b2b2b;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        #results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 1px solid #333;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+        }
+        .card-info {
+            padding: 10px;
+        }
+        .card-race {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        .card-name {
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-top: 4px;
+            color: #fff;
+        }
+        #profile-box {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 380px;
+            height: 100%;
+            background: #1e1e1e;
+            border-left: 1px solid #333;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+            transition: right 0.3s ease;
+            padding: 20px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        #profile-box.active {
+            right: 0;
+        }
+        .close-btn {
+            font-size: 24px;
+            cursor: pointer;
+            float: right;
+            color: #888;
+        }
+        .profile-img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .profile-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        .profile-kanji {
+            color: #888;
+            margin-bottom: 10px;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #333;
+            padding: 6px 0;
+            font-size: 0.9rem;
+        }
+        .profile-desc {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #ccc;
+            line-height: 1.4;
+        }
+        .status-msg {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            font-size: 1.1rem;
+            color: #888;
+        }
+    </style>
 </head>
 
 <body>
@@ -21,9 +173,9 @@
                 <input type="text" id="userInput" placeholder="Search Anime (e.g. Bleach)..." onkeyup="handleKeyPress(event)">
                 <button onclick="fetchAnimeData()">Search</button>
             </div>
-            <div class="nav-link" onclick="fetchTopSeries()" style="cursor: pointer">Top Series</div>
-            <div class="nav-link" onclick="fetchTopMovies()" style="cursor: pointer">Top Movies</div>
-            <button class="btn btn-dark" onclick="switchTheme()" style="cursor: pointer">
+            <div class="nav-link" onclick="fetchTopSeries()">Top Series</div>
+            <div class="nav-link" onclick="fetchTopMovies()">Top Movies</div>
+            <button class="btn btn-dark" onclick="switchTheme()">
                 <span id="modeBtn">Light Mode</span>
             </button>
         </div>
@@ -37,18 +189,18 @@
     <main class="wrapper">
         <div class="content-box">
             <div class="clan-nav">
-                <span class="clan-label">FILTER TYPE</span>
+                <span class="clan-label me-2">FILTER TYPE</span>
                 <select id="typeFilter" onchange="fetchAnimeData(this.value)">
                     <option value="">All Types</option>
-                    <option value="tv">TV Series</option>
-                    <option value="movie">Movie</option>
-                    <option value="ova">OVA</option>
-                    <option value="special">Special</option>
+                    <option value="TV">TV Series</option>
+                    <option value="MOVIE">Movie</option>
+                    <option value="OVA">OVA</option>
+                    <option value="SPECIAL">Special</option>
                 </select>
             </div>
 
             <div id="results-grid">
-                <div class="placeholder-text">Search for an anime to begin data extraction.</div>
+                <div class="status-msg">Loading Anime Archive...</div>
             </div>
         </div>
     </main>
@@ -57,6 +209,7 @@
         var modeBtn = document.getElementById("modeBtn");
         var body = document.body;
         let mode = "dark";
+        let loadIntervalId = null;
         
         function switchTheme() {
             if (mode === "light") {
@@ -69,27 +222,32 @@
             body.setAttribute("data-bs-theme", mode);
         }
 
-        const API_BASE = "https://api.jikan.moe/v4/anime";
-        const EXCLUDE_GENRES = "12,49";
+        const ANILIST_URL = "https://graphql.anilist.co";
 
-        function isAdultContent(anime) {
-            if (!anime) return true;
-
-            const rating = anime.rating ? anime.rating.toLowerCase() : "";
-            if (rating.includes('rx') || rating.includes('hentai') || rating.includes('x-rated')) return true;
-
-            const adultGenreIds = [12, 49];
-            const hasAdultGenre = anime.genres && anime.genres.some(g => adultGenreIds.includes(g.mal_id));
-            if (hasAdultGenre) return true;
-
-            const adultKeywords = ['hentai', 'uncensored', 'erotica', 'sex', 'porn'];
-            const title = anime.title ? anime.title.toLowerCase() : "";
-            const synopsis = anime.synopsis ? anime.synopsis.toLowerCase() : "";
-
-            if (adultKeywords.some(word => title.includes(word) || synopsis.includes(word))) return true;
-
-            return false;
-        }
+        const ANIME_QUERY = `
+            query ($search: String, $format: MediaFormat, $sort: [MediaSort]) {
+                Page(perPage: 30) {
+                    media(search: $search, format: $format, sort: $sort, type: ANIME, isAdult: false) {
+                        id
+                        title {
+                            romaji
+                            english
+                            native
+                        }
+                        coverImage {
+                            large
+                            extraLarge
+                        }
+                        format
+                        averageScore
+                        episodes
+                        status
+                        description
+                        siteUrl
+                    }
+                }
+            }
+        `;
 
         function handleKeyPress(e) {
             if (e.key === 'Enter') {
@@ -97,7 +255,31 @@
             }
         }
 
+        function clearTimer() {
+            if (loadIntervalId) {
+                clearInterval(loadIntervalId);
+                loadIntervalId = null;
+            }
+        }
+
+        async function queryAniList(variables) {
+            const response = await fetch(ANILIST_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: ANIME_QUERY,
+                    variables: variables
+                })
+            });
+            const json = await response.json();
+            return json.data?.Page?.media || [];
+        }
+
         async function fetchAnimeData(typeValue = null) {
+            clearTimer();
             const query = document.getElementById('userInput').value.trim();
             const filterType = typeValue || document.getElementById('typeFilter').value;
             const grid = document.getElementById('results-grid');
@@ -110,119 +292,143 @@
             grid.innerHTML = "<p class='status-msg'>Accessing Global Database...</p>";
 
             try {
-                let url = `${API_BASE}?q=${encodeURIComponent(query)}&sfw=true&genres_exclude=${EXCLUDE_GENRES}`;
-                if (filterType) url += `&type=${filterType}`;
+                const variables = {};
+                if (query) variables.search = query;
+                if (filterType) variables.format = filterType;
 
-                const res = await fetch(url);
-                if (res.status === 429) {
-                    grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson, #ff4655)">Rate limit reached. Please wait a moment and search again.</p>`;
-                    return;
-                }
-                const json = await res.json();
-
-                renderGrid(json.data || []);
+                const animeList = await queryAniList(variables);
+                staggerRenderGrid(animeList);
             } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson, #ff4655)">Database Error: Connection Interrupted.</p>`;
+                grid.innerHTML = `<p class='status-msg' style="color:#ff4655">Database Error: Connection Interrupted.</p>`;
             }
         }
 
-        function renderGrid(animeList) {
+        function staggerRenderGrid(animeList) {
+            clearTimer();
             const grid = document.getElementById('results-grid');
             grid.innerHTML = "";
 
-            const safeList = animeList.filter(anime => !isAdultContent(anime));
+            const safeList = animeList.filter(anime => {
+                if (!anime || !anime.coverImage) return false;
+                const imgUrl = anime.coverImage.large || anime.coverImage.extraLarge;
+                if (!imgUrl || imgUrl.includes("default") || imgUrl.includes("placeholder")) return false;
+                return true;
+            });
 
             if (safeList.length === 0) {
                 grid.innerHTML = "<p class='status-msg'>No safe matches found in this sector.</p>";
                 return;
             }
 
-            safeList.forEach(anime => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.onclick = () => openProfile(anime);
+            let currentIndex = 0;
+            const batchSize = 3;
 
-                card.innerHTML = `
-                    <img src="${anime.images.jpg.image_url}" alt="${anime.title}">
-                    <div class="card-info">
-                        <div class="card-race">${anime.type || 'N/A'} • ${anime.score || 'N/A'} ★</div>
-                        <div class="card-name">${anime.title}</div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
+            function renderNextBatch() {
+                const chunk = safeList.slice(currentIndex, currentIndex + batchSize);
+                
+                chunk.forEach(anime => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.onclick = () => openProfile(anime);
+
+                    const posterImg = anime.coverImage.large || anime.coverImage.extraLarge;
+                    const title = anime.title.english || anime.title.romaji || 'Unknown Title';
+                    const type = anime.format || 'N/A';
+                    const score = anime.averageScore ? (anime.averageScore / 10).toFixed(1) : 'N/A';
+
+                    card.innerHTML = `
+                        <img src="${posterImg}" alt="${title}">
+                        <div class="card-info">
+                            <div class="card-race">${type} • ${score} ★</div>
+                            <div class="card-name">${title}</div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                currentIndex += batchSize;
+                if (currentIndex >= safeList.length) {
+                    clearTimer();
+                }
+            }
+
+            // Render first 3 items immediately
+            renderNextBatch();
+
+            // Render 3 items every 3 seconds (3000ms)
+            if (currentIndex < safeList.length) {
+                loadIntervalId = setInterval(() => {
+                    renderNextBatch();
+                }, 3000);
+            }
         }
 
         async function fetchTopSeries() {
+            clearTimer();
             const grid = document.getElementById('results-grid');
-            const TOP_SERIES_API = "https://api.jikan.moe/v4/top/anime?type=tv&sfw=true";
-
             document.getElementById('userInput').value = "";
             grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Series...</p>";
 
             try {
-                const res = await fetch(TOP_SERIES_API);
-                const json = await res.json();
-                renderGrid(json.data || []);
+                const animeList = await queryAniList({ format: "TV", sort: ["SCORE_DESC"] });
+                staggerRenderGrid(animeList);
             } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson, #ff4655)">Error: Could not retrieve series rankings.</p>`;
+                grid.innerHTML = `<p class='status-msg' style="color:#ff4655">Error: Could not retrieve series rankings.</p>`;
             }
         }
 
         async function fetchTopMovies() {
+            clearTimer();
             const grid = document.getElementById('results-grid');
-            const TOP_MOVIES_API = "https://api.jikan.moe/v4/top/anime?type=movie&sfw=true";
-
             document.getElementById('userInput').value = "";
             grid.innerHTML = "<p class='status-msg'>Accessing High-Ranked Movies...</p>";
 
             try {
-                const res = await fetch(TOP_MOVIES_API);
-                const json = await res.json();
-                renderGrid(json.data || []);
+                const animeList = await queryAniList({ format: "MOVIE", sort: ["SCORE_DESC"] });
+                staggerRenderGrid(animeList);
             } catch (err) {
-                grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson, #ff4655)">Error: Could not retrieve movie rankings.</p>`;
+                grid.innerHTML = `<p class='status-msg' style="color:#ff4655">Error: Could not retrieve movie rankings.</p>`;
             }
         }
 
-        // Safe initial load with built-in retry mechanism to bypass rate limits (429)
-        async function fetchInitialAnime(retries = 3) {
+        async function fetchInitialAnime() {
+            clearTimer();
             const grid = document.getElementById('results-grid');
+            document.getElementById('userInput').value = "";
             grid.innerHTML = "<p class='status-msg'>Loading Anime Archive...</p>";
 
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const res = await fetch("https://api.jikan.moe/v4/top/anime?sfw=true&limit=16");
-                    if (res.status === 429) {
-                        await new Promise(r => setTimeout(r, 1200)); // wait before retrying
-                        continue;
-                    }
-                    const json = await res.json();
-                    if (json.data && json.data.length > 0) {
-                        renderGrid(json.data);
-                        return;
-                    }
-                } catch (err) {
-                    // try next iteration
+            try {
+                const animeList = await queryAniList({ sort: ["POPULARITY_DESC"] });
+                if (animeList.length > 0) {
+                    staggerRenderGrid(animeList);
+                    return;
                 }
+            } catch (err) {
+                grid.innerHTML = `<p class='status-msg' style="color:#ff4655">Connection error. Use the search bar above.</p>`;
             }
-            grid.innerHTML = `<p class='status-msg' style="color:var(--hollow-crimson, #ff4655)">API rate limit hit. Please click 'ANIME ARCHIVE' or search to retry.</p>`;
         }
 
         function openProfile(anime) {
             const box = document.getElementById('profile-box');
             const content = document.getElementById('profile-content');
 
+            const largeImg = anime.coverImage.extraLarge || anime.coverImage.large;
+            const title = anime.title.english || anime.title.romaji || 'Unknown Title';
+            const kanji = anime.title.native || '';
+            const episodes = anime.episodes || '??';
+            const status = anime.status || 'N/A';
+            const synopsis = anime.description ? anime.description.replace(/<[^>]*>?/gm, '') : 'No synopsis available.';
+            const aniListUrl = anime.siteUrl;
+
             content.innerHTML = `
-                <img src="${anime.images.jpg.large_image_url}" class="profile-img">
-                <div class="profile-title">${anime.title}</div>
-                <div class="profile-kanji">${anime.title_japanese || ''}</div>
-                <div class="stat-row"><span class="stat-label">Episodes</span><span>${anime.episodes || '??'}</span></div>
-                <div class="stat-row"><span class="stat-label">Status</span><span>${anime.status || 'N/A'}</span></div>
-                <div class="stat-row"><span class="stat-label">Rating</span><span>${anime.rating || 'Unrated'}</span></div>
-                <p class="profile-desc">${anime.synopsis || 'No synopsis available.'}</p>
+                <img src="${largeImg}" class="profile-img">
+                <div class="profile-title">${title}</div>
+                <div class="profile-kanji">${kanji}</div>
+                <div class="stat-row"><span class="stat-label">Episodes</span><span>${episodes}</span></div>
+                <div class="stat-row"><span class="stat-label">Status</span><span>${status}</span></div>
+                <p class="profile-desc">${synopsis}</p>
                 <div style="margin-top: 20px;">
-                    <a href="${anime.url}" target="_blank" style="color: #4a90e2; text-decoration: none; font-weight: bold;">View on MyAnimeList →</a>
+                    <a href="${aniListUrl}" target="_blank" style="color: #4a90e2; text-decoration: none; font-weight: bold;">View on AniList →</a>
                 </div>
             `;
             box.classList.add('active');
