@@ -197,3 +197,22 @@ body {
     border-color: #ff4655; 
     color: #ffffff;
 }
+/* Mobile Bottom Navigation Override */
+@media (max-width: 992px) {
+    .main-content .position-sticky {
+        position: fixed !important;
+        bottom: 15px !important;
+        top: auto !important;
+        left: 50% !important;
+        transform: translateX(-50%);
+        width: 90% !important;
+        max-width: 400px;
+        z-index: 1050;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* Adds a little padding at the bottom of the page so the buttons don't overlap content */
+    body {
+        padding-bottom: 80px; 
+    }
+}
