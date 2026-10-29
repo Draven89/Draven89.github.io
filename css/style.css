@@ -1,3 +1,8 @@
+/* Smooth scrolling for anchor links */
+html {
+    scroll-behavior: smooth;
+}
+
 /* Base Page & Background */
 body {
     margin: 0;
@@ -109,6 +114,30 @@ body {
     font-size: 0.95rem;
     line-height: 1.6;
     color: #cbd5e1;
+}
+
+/* Sticky Navigation Bar Styling */
+.main-content .position-sticky {
+    background-color: rgba(17, 24, 35, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Navigation Buttons Theming */
+.main-content .position-sticky .btn-outline-light {
+    border-color: #334155;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.main-content .position-sticky .btn-outline-light:hover,
+.main-content .position-sticky .btn-outline-light:focus {
+    background-color: rgba(255, 70, 85, 0.15);
+    border-color: #ff4655;
+    color: #ffffff;
 }
 
 /* Skills Tags */
