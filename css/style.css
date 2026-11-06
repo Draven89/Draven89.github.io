@@ -1,7 +1,9 @@
+/* Smooth scrolling for anchor links */
 html {
     scroll-behavior: smooth;
 }
 
+/* Base Page & Background */
 body {
     margin: 0;
     background: radial-gradient(circle at top, #1f2c3a, #0b1118); 
@@ -10,9 +12,9 @@ body {
     min-height: 100vh;
     box-sizing: border-box;
     position: relative;
-    padding-bottom: 70px;
 }
 
+/* Animated Background Glow Layer */
 .bg-animation {
     position: fixed;
     top: -50%;
@@ -35,73 +37,163 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-.card {
-    background-color: rgba(22, 32, 43, 0.9) !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
-    color: #cbd5e1;
+/* Left Sidebar Box */
+.profile-card {
+    background-color: #111823;
+    color: white;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 70, 85, 0.2);
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
+    box-sizing: border-box;
+    position: sticky;
+    top: 40px;
 }
 
-.card h3 {
-    color: #ff4655 !important;
+.profile-pic {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ff4655;
+    background-color: #1e293b;
+    flex-shrink: 0;
+}
+
+.badge {
+    background-color: #ff4655;
+    color: white;
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.card .bg-light {
-    background-color: #111823 !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+.contact-info {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.contact-info p {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: #94a3b8;
+}
+
+.contact-info strong {
+    color: #ffffff;
+    font-size: 0.85rem;
+}
+
+.contact-info a {
+    color: #94a3b8;
+    text-decoration: none;
+}
+
+.contact-info a:hover {
+    color: #ff4655;
+}
+
+/* Main Content Cards */
+.content-card {
+    background-color: rgba(22, 32, 43, 0.9);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.content-card h2 {
+    color: #ff4655;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.content-card p {
+    font-size: 0.95rem;
+    line-height: 1.6;
     color: #cbd5e1;
 }
 
-.card .bg-light h5 {
+/* Sticky Navigation Bar Styling */
+.main-content .position-sticky {
+    background-color: rgba(17, 24, 35, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Navigation Buttons Theming */
+.main-content .position-sticky .btn-outline-light {
+    border-color: #334155;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.main-content .position-sticky .btn-outline-light:hover,
+.main-content .position-sticky .btn-outline-light:focus {
+    background-color: rgba(255, 70, 85, 0.15);
+    border-color: #ff4655;
     color: #ffffff;
 }
 
-.card .bg-light p {
-    color: #94a3b8 !important;
-}
-
-.badge.bg-secondary {
-    background-color: #111823 !important;
-    color: #94a3b8 !important;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+/* Skills Tags */
+.skill-tag {
+    background-color: #111823;
+    color: #94a3b8;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.82rem;
+    padding: 6px 16px;
+    border-radius: 6px;
     font-weight: 500;
 }
 
-.position-fixed[style*="background-color: maroon"] {
-    background-color: rgba(128, 0, 0, 0.92) !important;
-    backdrop-filter: blur(8px);
-    border-color: rgba(255, 255, 255, 0.1);
+/* Project Cards */
+.project-card-v2 {
+    background-color: #111823;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
-.butterfly-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
+.project-preview-wrap {
+    width: 100%;
+    height: 150px;
+    overflow: hidden;
+}
+
+.project-preview-img {
     width: 100%;
     height: 100%;
-    overflow: hidden;
-    z-index: -1;
-    pointer-events: none;
+    object-fit: cover;
 }
 
-.butterfly {
-    position: absolute;
-    bottom: -50px;
-    font-size: 20px;
-    animation: flyUp 12s linear infinite;
-    opacity: 0.5;
+.project-details-v2 p {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.5;
 }
 
-@keyframes flyUp {
-    0% {
-        transform: translateY(0) translateX(0) rotate(0deg);
-        opacity: 0;
-    }
-    20% {
-        opacity: 0.7;
-    }
-    100% {
-        transform: translateY(-110vh) translateX(40px) rotate(360deg);
-        opacity: 0;
-    }
+.action-btn-v2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #ffffff;
+    border: 1px solid #334155;
+    padding: 8px 14px;
+    border-radius: 6px;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.action-btn-v2:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: #ff4655; 
+    color: #ffffff;
 }
